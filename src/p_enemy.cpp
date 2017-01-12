@@ -53,6 +53,7 @@
 #include "p_checkposition.h"
 #include "math/cmath.h"
 #include "a_ammo.h"
+#include "g_levellocals.h"
 
 #include "gi.h"
 
@@ -3241,7 +3242,7 @@ void ModifyDropAmount(AInventory *inv, int dropamount)
 	else if (inv->IsKindOf (RUNTIME_CLASS(AAmmo)))
 	{
 		// Half ammo when dropped by bad guys.
-		int amount = static_cast<PClassAmmo *>(inv->GetClass())->DropAmount;
+		int amount = static_cast<AAmmo *>(inv)->DropAmount;
 		if (amount <= 0)
 		{
 			amount = MAX(1, int(inv->Amount * dropammofactor));

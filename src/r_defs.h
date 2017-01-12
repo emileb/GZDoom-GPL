@@ -24,7 +24,6 @@
 #ifndef __R_DEFS_H__
 #define __R_DEFS_H__
 
-#include <forward_list>
 #include "doomdef.h"
 #include "templates.h"
 #include "memarena.h"
@@ -94,10 +93,7 @@ typedef double vtype;
 
 struct vertex_t
 {
-private:
 	DVector2 p;
-
-public:
 
 	void set(fixed_t x, fixed_t y)
 	{
@@ -136,10 +132,12 @@ public:
 		return FLOAT2FIXED(p.Y);
 	}
 
-	DVector2 fPos()
+	DVector2 fPos() const
 	{
-		return { p.X, p.Y };
+		return p;
 	}
+
+	int Index() const;
 
 	angle_t viewangle;	// precalculated angle for clipping
 	int angletime;		// recalculation time for view angle
@@ -158,6 +156,12 @@ public:
 		numheights = numsectors = 0;
 		sectors = NULL;
 		heightlist = NULL;
+	}
+
+	~vertex_t()
+	{
+		if (sectors != nullptr) delete[] sectors;
+		if (heightlist != nullptr) delete[] heightlist;
 	}
 
 	bool operator== (const vertex_t &other)
@@ -661,6 +665,7 @@ public:
 	double FindLowestCeilingPoint(vertex_t **v) const;
 	double FindHighestFloorPoint(vertex_t **v) const;
 	void RemoveForceField();
+	int Index() const;
 
 	void AdjustFloorClip () const;
 	void SetColor(int r, int g, int b, int desat);
@@ -1162,7 +1167,7 @@ struct side_t
 	WORD		TexelLength;
 	SWORD		Light;
 	BYTE		Flags;
-	int			Index;		// needed to access custom UDMF fields which are stored in loading order.
+	int			UDMFIndex;		// needed to access custom UDMF fields which are stored in loading order.
 
 	int GetLightLevel (bool foggy, int baselight, bool is3dlight=false, int *pfakecontrast_usedbygzdoom=NULL) const;
 
@@ -1270,6 +1275,8 @@ struct side_t
 	vertex_t *V1() const;
 	vertex_t *V2() const;
 
+	int Index() const;
+
 	//For GL
 	FLightNode * lighthead;				// all blended lights that may affect this wall
 
@@ -1341,7 +1348,19 @@ struct line_t
 	{
 		return portalindex >= linePortals.Size() ? 0 : linePortals[portalindex].mAlign;
 	}
+
+	int Index() const;
 };
+
+inline vertex_t *side_t::V1() const
+{
+	return this == linedef->sidedef[0] ? linedef->v1 : linedef->v2;
+}
+
+inline vertex_t *side_t::V2() const
+{
+	return this == linedef->sidedef[0] ? linedef->v2 : linedef->v1;
+}
 
 // phares 3/14/98
 //
@@ -1404,12 +1423,6 @@ struct seg_t
 	subsector_t*	Subsector;
 
 	float			sidefrac;		// relative position of seg's ending vertex on owning sidedef
-};
-
-struct glsegextra_t
-{
-	DWORD		 PartnerSeg;
-	subsector_t *Subsector;
 };
 
 extern seg_t *segs;

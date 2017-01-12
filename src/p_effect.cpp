@@ -53,6 +53,7 @@
 #include "colormatcher.h"
 #include "d_player.h"
 #include "r_utility.h"
+#include "g_levellocals.h"
 
 CVAR (Int, cl_rockettrails, 1, CVAR_ARCHIVE);
 CVAR (Bool, r_rail_smartspiral, 0, CVAR_ARCHIVE);
@@ -272,7 +273,7 @@ void P_ThinkParticles ()
 		auto oldtrans = particle->alpha;
 		particle->alpha -= particle->fadestep;
 		particle->size += particle->sizestep;
-		if (oldtrans < particle->alpha || --particle->ttl <= 0 || (particle->size <= 0))
+		if (particle->alpha <= 0 || oldtrans < particle->alpha || --particle->ttl <= 0 || (particle->size <= 0))
 		{ // The particle has expired, so free it
 			memset (particle, 0, sizeof(particle_t));
 			if (prev)
@@ -350,7 +351,7 @@ void P_RunEffects ()
 {
 	if (players[consoleplayer].camera == NULL) return;
 
-	int	pnum = int(players[consoleplayer].camera->Sector - sectors) * numsectors;
+	int	pnum = players[consoleplayer].camera->Sector->Index() * level.sectors.Size();
 
 	AActor *actor;
 	TThinkerIterator<AActor> iterator;
@@ -360,7 +361,7 @@ void P_RunEffects ()
 		if (actor->effects)
 		{
 			// Only run the effect if the actor is potentially visible
-			int rnum = pnum + int(actor->Sector - sectors);
+			int rnum = pnum + actor->Sector->Index();
 			if (rejectmatrix == NULL || !(rejectmatrix[rnum>>3] & (1 << (rnum & 7))))
 				P_RunEffect (actor, actor->effects);
 		}
@@ -763,7 +764,7 @@ void P_DrawRailTrail(AActor *source, TArray<SPortalHit> &portalhits, int color1,
 			int spiralduration = (duration == 0) ? 35 : duration;
 
 			p->alpha = 1.f;
-			p->ttl = duration;
+			p->ttl = spiralduration;
 			p->fadestep = FADEFROMTTL(spiralduration);
 			p->size = 3;
 			p->bright = fullbright;

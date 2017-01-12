@@ -945,7 +945,6 @@ set (PCH_SOURCES
 	p_udmf.cpp
 	p_usdf.cpp
 	p_user.cpp
-	p_writemap.cpp
 	p_xlat.cpp
 	parsecontext.cpp
 	po_man.cpp
@@ -1049,6 +1048,7 @@ set (PCH_SOURCES
 	scripting/thingdef_data.cpp
 	scripting/thingdef_properties.cpp
 	scripting/codegeneration/codegen.cpp
+	scripting/codegeneration/dynarrays.cpp
 	scripting/decorate/olddecorations.cpp
 	scripting/decorate/thingdef_exp.cpp
 	scripting/decorate/thingdef_parse.cpp

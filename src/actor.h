@@ -45,7 +45,6 @@
 #include "portal.h"
 
 struct subsector_t;
-class PClassAmmo;
 struct FBlockNode;
 struct FPortalGroupArray;
 
@@ -734,7 +733,7 @@ public:
 	AInventory *FirstInv ();
 
 	// Tries to give the actor some ammo.
-	bool GiveAmmo (PClassAmmo *type, int amount);
+	bool GiveAmmo (PClassInventory *type, int amount);
 
 	// Destroys all the inventory the actor is holding.
 	void DestroyAllInventory ();
@@ -780,14 +779,7 @@ public:
 	// set translation
 	void SetTranslation(FName trname);
 
-	double GetBobOffset(double ticfrac = 0) const
-	{
-		if (!(flags2 & MF2_FLOATBOB))
-		{
-			return 0;
-		}
-		return BobSin(FloatBobPhase + level.maptime + ticfrac);
-	}
+	double GetBobOffset(double ticfrac = 0) const;
 
 	// Enter the crash state
 	void Crash();

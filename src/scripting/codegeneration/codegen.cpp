@@ -262,12 +262,15 @@ static bool AreCompatiblePointerTypes(PType *dest, PType *source, bool forcompar
 {
 	if (dest->IsKindOf(RUNTIME_CLASS(PPointer)) && source->IsKindOf(RUNTIME_CLASS(PPointer)))
 	{
-		// Pointers to different types are only compatible if both point to an object and the source type is a child of the destination type.
 		auto fromtype = static_cast<PPointer *>(source);
 		auto totype = static_cast<PPointer *>(dest);
-		if (fromtype == nullptr) return true;
+		// null pointers can be assigned to everything, everything can be assigned to void pointers.
+		if (fromtype == nullptr || totype == TypeVoidPtr) return true;
+		// when comparing const-ness does not matter.
 		if (!forcompare && totype->IsConst != fromtype->IsConst) return false;
+		// A type is always compatible to itself.
 		if (fromtype == totype) return true;
+		// Pointers to different types are only compatible if both point to an object and the source type is a child of the destination type.
 		if (fromtype->PointedType->IsKindOf(RUNTIME_CLASS(PClass)) && totype->PointedType->IsKindOf(RUNTIME_CLASS(PClass)))
 		{
 			auto fromcls = static_cast<PClass *>(fromtype->PointedType);
@@ -5157,6 +5160,7 @@ ExpEmit FxRandom::Emit(VMFunctionBuilder *build)
 	assert(((PSymbolVMFunction *)sym)->Function != nullptr);
 	callfunc = ((PSymbolVMFunction *)sym)->Function;
 
+	if (build->FramePointer.Fixed) EmitTail = false;	// do not tail call if the stack is in use
 	int opcode = (EmitTail ? OP_TAIL_K : OP_CALL_K);
 
 	build->Emit(OP_PARAM, 0, REGT_POINTER | REGT_KONST, build->GetConstantAddress(rng, ATAG_RNG));
@@ -5407,6 +5411,7 @@ ExpEmit FxFRandom::Emit(VMFunctionBuilder *build)
 	assert(((PSymbolVMFunction *)sym)->Function != nullptr);
 	callfunc = ((PSymbolVMFunction *)sym)->Function;
 
+	if (build->FramePointer.Fixed) EmitTail = false;	// do not tail call if the stack is in use
 	int opcode = (EmitTail ? OP_TAIL_K : OP_CALL_K);
 
 	build->Emit(OP_PARAM, 0, REGT_POINTER | REGT_KONST, build->GetConstantAddress(rng, ATAG_RNG));
@@ -5501,6 +5506,7 @@ ExpEmit FxRandom2::Emit(VMFunctionBuilder *build)
 	assert(((PSymbolVMFunction *)sym)->Function != nullptr);
 	callfunc = ((PSymbolVMFunction *)sym)->Function;
 
+	if (build->FramePointer.Fixed) EmitTail = false;	// do not tail call if the stack is in use
 	int opcode = (EmitTail ? OP_TAIL_K : OP_CALL_K);
 
 	build->Emit(OP_PARAM, 0, REGT_POINTER | REGT_KONST, build->GetConstantAddress(rng, ATAG_RNG));
@@ -7798,6 +7804,7 @@ ExpEmit FxActionSpecialCall::Emit(VMFunctionBuilder *build)
 	ArgList.DeleteAndClear();
 	ArgList.ShrinkToFit();
 
+	if (build->FramePointer.Fixed) EmitTail = false;	// do not tail call if the stack is in use
 	if (EmitTail)
 	{
 		build->Emit(OP_TAIL_K, build->GetConstantAddress(callfunc, ATAG_OBJECT), 2 + i, 0);
@@ -8068,6 +8075,8 @@ ExpEmit FxVMFunctionCall::Emit(VMFunctionBuilder *build)
 {
 	assert(build->Registers[REGT_POINTER].GetMostUsed() >= build->NumImplicits);
 	int count = 0;
+
+	if (build->FramePointer.Fixed) EmitTail = false;	// do not tail call if the stack is in use
 
 	if (count == 1)
 	{
@@ -9505,6 +9514,19 @@ ExpEmit FxReturnStatement::Emit(VMFunctionBuilder *build)
 {
 	ExpEmit out(0, REGT_NIL);
 
+	// call the destructors for all structs requiring one.
+	// go in reverse order of construction
+	for (int i = build->ConstructedStructs.Size() - 1; i >= 0; i--)
+	{
+		auto pstr = static_cast<PStruct*>(build->ConstructedStructs[i]->ValueType);
+		assert(pstr->mDestructor != nullptr);
+		ExpEmit reg(build, REGT_POINTER);
+		build->Emit(OP_ADDA_RK, reg.RegNum, build->FramePointer.RegNum, build->GetConstantInt(build->ConstructedStructs[i]->StackOffset));
+		build->Emit(OP_PARAM, 0, reg.RegType, reg.RegNum);
+		build->Emit(OP_CALL_K, build->GetConstantAddress(pstr->mDestructor, ATAG_OBJECT), 1, 0);
+		reg.Free(build);
+	}
+
 	// If we return nothing, use a regular RET opcode.
 	// Otherwise just return the value we're given.
 	if (Value == nullptr)
@@ -10170,6 +10192,19 @@ ExpEmit FxLocalVariableDeclaration::Emit(VMFunctionBuilder *build)
 	else
 	{
 		// Init arrays and structs.
+		if (ValueType->IsA(RUNTIME_CLASS(PStruct)))
+		{
+			auto pstr = static_cast<PStruct*>(ValueType);
+			if (pstr->mConstructor != nullptr)
+			{
+				ExpEmit reg(build, REGT_POINTER);
+				build->Emit(OP_ADDA_RK, reg.RegNum, build->FramePointer.RegNum, build->GetConstantInt(StackOffset));
+				build->Emit(OP_PARAM, 0, reg.RegType, reg.RegNum);
+				build->Emit(OP_CALL_K, build->GetConstantAddress(pstr->mConstructor, ATAG_OBJECT), 1, 0);
+				reg.Free(build);
+			}
+			if (pstr->mDestructor != nullptr) build->ConstructedStructs.Push(this);
+		}
 	}
 	return ExpEmit();
 }
@@ -10180,6 +10215,22 @@ void FxLocalVariableDeclaration::Release(VMFunctionBuilder *build)
 	if(RegNum != -1)
 	{
 		build->Registers[ValueType->GetRegType()].Return(RegNum, RegCount);
+	}
+	else
+	{
+		if (ValueType->IsA(RUNTIME_CLASS(PStruct)))
+		{
+			auto pstr = static_cast<PStruct*>(ValueType);
+			if (pstr->mDestructor != nullptr)
+			{
+				ExpEmit reg(build, REGT_POINTER);
+				build->Emit(OP_ADDA_RK, reg.RegNum, build->FramePointer.RegNum, build->GetConstantInt(StackOffset));
+				build->Emit(OP_PARAM, 0, reg.RegType, reg.RegNum);
+				build->Emit(OP_CALL_K, build->GetConstantAddress(pstr->mDestructor, ATAG_OBJECT), 1, 0);
+				reg.Free(build);
+			}
+			build->ConstructedStructs.Delete(build->ConstructedStructs.Find(this));
+		}
 	}
 	// Stack space will not be released because that would make controlled destruction impossible.
 	// For that all local stack variables need to live for the entire execution of a function.

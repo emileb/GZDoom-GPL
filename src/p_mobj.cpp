@@ -73,6 +73,7 @@
 #include "a_armor.h"
 #include "a_ammo.h"
 #include "a_health.h"
+#include "g_levellocals.h"
 
 // MACROS ------------------------------------------------------------------
 
@@ -1134,7 +1135,7 @@ DEFINE_ACTION_FUNCTION(AActor, GiveInventoryType)
 //
 //============================================================================
 
-bool AActor::GiveAmmo (PClassAmmo *type, int amount)
+bool AActor::GiveAmmo (PClassInventory *type, int amount)
 {
 	if (type != NULL)
 	{
@@ -3962,9 +3963,9 @@ void AActor::Tick ()
 				sector_t *sec = node->m_sector;
 				DVector2 scrollv;
 
-				if (level.Scrolls.Size() > unsigned(sec-sectors))
+				if (level.Scrolls.Size() > unsigned(sec->Index()))
 				{
-					scrollv = level.Scrolls[sec - sectors];
+					scrollv = level.Scrolls[sec->Index()];
 				}
 				else
 				{
@@ -5252,9 +5253,9 @@ APlayerPawn *P_SpawnPlayer (FPlayerStart *mthing, int playernum, int flags)
 			{
 				if (th->LastHeard == oldactor) th->LastHeard = NULL;
 			}
-			for(int i = 0; i < numsectors; i++)
+			for(auto &sec : level.sectors)
 			{
-				if (sectors[i].SoundTarget == oldactor) sectors[i].SoundTarget = NULL;
+				if (sec.SoundTarget == oldactor) sec.SoundTarget = nullptr;
 			}
 
 			DObject::StaticPointerSubstitution (oldactor, p->mo);
@@ -7540,6 +7541,22 @@ DEFINE_ACTION_FUNCTION(AActor, A_RestoreSpecialPosition)
 	return 0;
 }
 
+double AActor::GetBobOffset(double ticfrac) const
+{
+	if (!(flags2 & MF2_FLOATBOB))
+	{
+		return 0;
+	}
+	return BobSin(FloatBobPhase + level.maptime + ticfrac);
+}
+
+DEFINE_ACTION_FUNCTION(AActor, GetBobOffset)
+{
+	PARAM_SELF_PROLOGUE(AActor);
+	PARAM_FLOAT_DEF(frac);
+	ACTION_RETURN_FLOAT(self->GetBobOffset(frac));
+}
+
 
 
 
@@ -7638,13 +7655,6 @@ DEFINE_ACTION_FUNCTION(AActor, GetDefaultByType)
 	PARAM_PROLOGUE;
 	PARAM_CLASS(cls, AActor);
 	ACTION_RETURN_OBJECT(cls == nullptr? nullptr : GetDefaultByType(cls));
-}
-
-DEFINE_ACTION_FUNCTION(AActor, GetBobOffset)
-{
-	PARAM_SELF_PROLOGUE(AActor);
-	PARAM_FLOAT_DEF(frac);
-	ACTION_RETURN_FLOAT(self->GetBobOffset(frac));
 }
 
 // This combines all 3 variations of the internal function

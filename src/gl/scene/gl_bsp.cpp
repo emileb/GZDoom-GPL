@@ -87,7 +87,7 @@ static sector_t *currentsector;
 static void AddLine (seg_t *seg, bool portalclip)
 {
 #ifdef _DEBUG
-	if (seg->linedef - lines == 38)
+	if (seg->linedef->Index() == 38)
 	{
 		int a = 0;
 	}
@@ -420,7 +420,7 @@ static void DoSubsector(subsector_t * sub)
 	sector_t fake;
 	
 #ifdef _DEBUG
-	if (sub->sector-sectors==931)
+	if (sub->sector->sectornum==931)
 	{
 		int a = 0;
 	}

@@ -110,6 +110,7 @@
 #include "p_local.h"
 #include "autosegs.h"
 #include "fragglescript/t_fs.h"
+#include "g_levellocals.h"
 
 EXTERN_CVAR(Bool, hud_althud)
 void DrawHUD();

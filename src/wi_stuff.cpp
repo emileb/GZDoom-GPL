@@ -53,6 +53,7 @@
 #include "templates.h"
 #include "gstrings.h"
 #include "cmdlib.h"
+#include "g_levellocals.h"
 
 // States for the intermission
 typedef enum
