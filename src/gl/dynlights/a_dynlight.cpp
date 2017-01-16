@@ -109,10 +109,10 @@ DEFINE_CLASS_PROPERTY(type, S, DynamicLight)
 // which is controlled by flags
 //
 //==========================================================================
-IMPLEMENT_CLASS (ADynamicLight, false, false)
-IMPLEMENT_CLASS (AVavoomLight, false, false)
-IMPLEMENT_CLASS (AVavoomLightWhite, false, false)
-IMPLEMENT_CLASS (AVavoomLightColor, false, false)
+IMPLEMENT_CLASS(ADynamicLight, false, false)
+IMPLEMENT_CLASS(AVavoomLight, false, false)
+IMPLEMENT_CLASS(AVavoomLightWhite, false, false)
+IMPLEMENT_CLASS(AVavoomLightColor, false, false)
 
 void AVavoomLight::BeginPlay ()
 {
@@ -805,10 +805,10 @@ void ADynamicLight::UnlinkLight ()
 	while (touching_sector) touching_sector = DeleteLightNode(touching_sector);
 }
 
-void ADynamicLight::Destroy()
+void ADynamicLight::OnDestroy()
 {
 	UnlinkLight();
-	Super::Destroy();
+	Super::OnDestroy();
 }
 
 

@@ -60,7 +60,6 @@
 #include "d_netinf.h"
 #include "a_morph.h"
 #include "virtual.h"
-#include "a_health.h"
 #include "g_levellocals.h"
 
 static FRandom pr_obituary ("Obituary");
@@ -478,7 +477,7 @@ void AActor::Die (AActor *source, AActor *inflictor, int dmgflags)
 
 				if (source->player->morphTics)
 				{ // Make a super chicken
-					source->GiveInventoryType (RUNTIME_CLASS(APowerWeaponLevel2));
+					source->GiveInventoryType (PClass::FindActor(NAME_PowerWeaponLevel2));
 				}
 
 				if (deathmatch && cl_showsprees)
@@ -841,11 +840,12 @@ void P_AutoUseHealth(player_t *player, int saveHealth)
 	TArray<AInventory *> NormalHealthItems;
 	TArray<AInventory *> LargeHealthItems;
 
+	auto hptype = PClass::FindActor(NAME_HealthPickup);
 	for(AInventory *inv = player->mo->Inventory; inv != NULL; inv = inv->Inventory)
 	{
-		if (inv->Amount > 0 && inv->IsKindOf(RUNTIME_CLASS(AHealthPickup)))
+		if (inv->Amount > 0 && inv->IsKindOf(hptype))
 		{
-			int mode = static_cast<AHealthPickup*>(inv)->autousemode;
+			int mode = inv->IntVar(NAME_autousemode);
 
 			if (mode == 1) NormalHealthItems.Push(inv);
 			else if (mode == 2) LargeHealthItems.Push(inv);
@@ -885,12 +885,12 @@ void P_AutoUseStrifeHealth (player_t *player)
 {
 	TArray<AInventory *> Items;
 
+	auto hptype = PClass::FindActor(NAME_HealthPickup);
 	for(AInventory *inv = player->mo->Inventory; inv != NULL; inv = inv->Inventory)
 	{
-		if (inv->Amount > 0 && inv->IsKindOf(RUNTIME_CLASS(AHealthPickup)))
+		if (inv->Amount > 0 && inv->IsKindOf(hptype))
 		{
-			int mode = static_cast<AHealthPickup*>(inv)->autousemode;
-
+			int mode = inv->IntVar(NAME_autousemode);
 			if (mode == 3) Items.Push(inv);
 		}
 	}

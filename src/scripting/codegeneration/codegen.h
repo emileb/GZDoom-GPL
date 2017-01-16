@@ -255,6 +255,7 @@ enum EFxType
 	EFX_MemberFunctionCall,
 	EFX_ActionSpecialCall,
 	EFX_FlopFunctionCall,
+	EFX_Format,
 	EFX_VMFunctionCall,
 	EFX_Sequence,
 	EFX_CompoundStatement,
@@ -288,6 +289,8 @@ enum EFxType
 	EFX_CVar,
 	EFX_NamedNode,
 	EFX_GetClass,
+	EFX_GetParentClass,
+	EFX_StrLen,
 	EFX_ColorLiteral,
 	EFX_GetDefaultByType,
 	EFX_COUNT
@@ -610,10 +613,11 @@ public:
 class FxNameCast : public FxExpression
 {
 	FxExpression *basex;
+	bool mExplicit;
 
 public:
 
-	FxNameCast(FxExpression *x);
+	FxNameCast(FxExpression *x, bool explicitly = false);
 	~FxNameCast();
 	FxExpression *Resolve(FCompileContext&);
 
@@ -1436,7 +1440,7 @@ class FxArrayElement : public FxExpression
 public:
 	FxExpression *Array;
 	FxExpression *index;
-	unsigned SizeAddr;
+	size_t SizeAddr;
 	bool AddressRequested;
 	bool AddressWritable;
 	bool arrayispointer = false;
@@ -1532,7 +1536,27 @@ public:
 
 //==========================================================================
 //
-//	FxFlopFunctionCall
+//	FxFormat
+//
+//==========================================================================
+
+class FxFormat : public FxExpression
+{
+	FArgumentList ArgList;
+	bool EmitTail;
+
+public:
+
+	FxFormat(FArgumentList &args, const FScriptPosition &pos);
+	~FxFormat();
+	FxExpression *Resolve(FCompileContext&);
+	PPrototype *ReturnProto();
+	ExpEmit Emit(VMFunctionBuilder *build);
+};
+
+//==========================================================================
+//
+//	FxVectorBuiltin
 //
 //==========================================================================
 
@@ -1551,7 +1575,25 @@ public:
 
 //==========================================================================
 //
-//	FxFlopFunctionCall
+//	FxVectorBuiltin
+//
+//==========================================================================
+
+class FxStrLen : public FxExpression
+{
+	FxExpression *Self;
+
+public:
+
+	FxStrLen(FxExpression *self);
+	~FxStrLen();
+	FxExpression *Resolve(FCompileContext&);
+	ExpEmit Emit(VMFunctionBuilder *build);
+};
+
+//==========================================================================
+//
+//	FxGetClass
 //
 //==========================================================================
 
@@ -1569,7 +1611,25 @@ public:
 
 //==========================================================================
 //
-//	FxFlopFunctionCall
+//	FxGetClass
+//
+//==========================================================================
+
+class FxGetParentClass : public FxExpression
+{
+	FxExpression *Self;
+
+public:
+
+	FxGetParentClass(FxExpression *self);
+	~FxGetParentClass();
+	FxExpression *Resolve(FCompileContext&);
+	ExpEmit Emit(VMFunctionBuilder *build);
+};
+
+//==========================================================================
+//
+//	FxGetDefaultByType
 //
 //==========================================================================
 

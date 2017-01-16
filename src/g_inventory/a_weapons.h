@@ -145,7 +145,7 @@ public:
 	virtual bool TryPickup (AActor *&toucher) override;
 	virtual bool TryPickupRestricted (AActor *&toucher) override;
 	virtual bool Use (bool pickup) override;
-	virtual void Destroy() override;
+	virtual void OnDestroy() override;
 
 	bool PickupForAmmo(AWeapon *ownedWeapon);
 	void PostMorphWeapon();
@@ -161,7 +161,6 @@ public:
 
 
 	virtual void EndPowerup ();
-	void CallEndPowerup();
 
 	enum
 	{
@@ -221,7 +220,7 @@ enum
 
 class AWeaponGiver : public AWeapon
 {
-	DECLARE_CLASS(AWeaponGiver, AWeapon)
+	DECLARE_CLASS (AWeaponGiver, AWeapon)
 
 public:
 	virtual bool TryPickup(AActor *&toucher) override;

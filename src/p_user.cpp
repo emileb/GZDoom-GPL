@@ -949,7 +949,7 @@ AWeapon *APlayerPawn::BestWeapon(PClassInventory *ammotype)
 	int bestOrder = INT_MAX;
 	AInventory *item;
 	AWeapon *weap;
-	bool tomed = NULL != FindInventory (RUNTIME_CLASS(APowerWeaponLevel2), true);
+	bool tomed = NULL != FindInventory (PClass::FindActor(NAME_PowerWeaponLevel2), true);
 
 	// Find the best weapon the player has.
 	for (item = Inventory; item != NULL; item = item->Inventory)
@@ -1049,6 +1049,13 @@ void APlayerPawn::CheckWeaponSwitch(PClassInventory *ammotype)
 	}
 }
 
+DEFINE_ACTION_FUNCTION(APlayerPawn, CheckWeaponSwitch)
+{
+	PARAM_SELF_PROLOGUE(APlayerPawn);
+	PARAM_OBJECT(ammotype, PClassInventory);
+	self->CheckWeaponSwitch(ammotype);
+	return 0;
+}
 //===========================================================================
 //
 // APlayerPawn :: GiveDeathmatchInventory

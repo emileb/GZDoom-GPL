@@ -37,6 +37,7 @@
 #include "r_sky.h"
 #include "r_data/colormaps.h"
 #include "g_levellocals.h"
+#include "virtual.h"
 
 
 // [RH]
@@ -1447,6 +1448,57 @@ DEFINE_ACTION_FUNCTION(_Sector, NextLowestFloorAt)
  }
 
 
+ //===========================================================================
+ //
+ //
+ //
+ //===========================================================================
+
+ bool sector_t::TriggerSectorActions(AActor *thing, int activation)
+ {
+	 AActor *act = SecActTarget;
+	 bool res = false;
+
+	 while (act != nullptr)
+	 {
+		 AActor *next = act->tracer;
+
+		 IFVIRTUALPTRNAME(act, "SectorAction", TriggerAction)
+		 {
+			 VMValue params[3] = { (DObject *)act, thing, activation };
+			 VMReturn ret;
+			 int didit;
+			 ret.IntAt(&didit);
+			 GlobalVMStack.Call(func, params, 3, &ret, 1, nullptr);
+
+			 if (didit)
+			 {
+				 if (act->flags4 & MF4_STANDSTILL)
+				 {
+					 act->Destroy();
+				 }
+			 }
+			 act = next;
+			 res |= !!didit;
+		 }
+	 }
+	 return res;
+ }
+
+ DEFINE_ACTION_FUNCTION(_Sector, TriggerSectorActions)
+ {
+	 PARAM_SELF_STRUCT_PROLOGUE(sector_t);
+	 PARAM_OBJECT(thing, AActor);
+	 PARAM_INT(activation);
+	 ACTION_RETURN_BOOL(self->TriggerSectorActions(thing, activation));
+ }
+
+ //===========================================================================
+ //
+ //
+ //
+ //===========================================================================
+
  DEFINE_ACTION_FUNCTION(_Sector, PointInSector)
  {
 	 PARAM_PROLOGUE;
@@ -1622,12 +1674,6 @@ DEFINE_ACTION_FUNCTION(_Sector, NextLowestFloorAt)
 	 ACTION_RETURN_INT(self->GetPlaneLight(pos));
  }
 
- class FSetTextureID : public FTextureID
- {
- public:
-	 FSetTextureID(int v) : FTextureID(v) {}
- };
-
  DEFINE_ACTION_FUNCTION(_Sector, SetTexture)
  {
 	 PARAM_SELF_STRUCT_PROLOGUE(sector_t);
@@ -1784,6 +1830,22 @@ DEFINE_ACTION_FUNCTION(_Sector, NextLowestFloorAt)
 		ThrowAbortException(X_ARRAY_OUT_OF_BOUNDS, "Accessed invalid sector");
 	}
 	ACTION_RETURN_INT(ndx);
+ }
+
+ DEFINE_ACTION_FUNCTION(_Sector, SetEnvironmentID)
+ {
+	 PARAM_SELF_STRUCT_PROLOGUE(sector_t);
+	 PARAM_INT(envnum);
+	 Zones[self->ZoneNumber].Environment = S_FindEnvironment(envnum);
+	 return 0;
+ }
+
+ DEFINE_ACTION_FUNCTION(_Sector, SetEnvironment)
+ {
+	 PARAM_SELF_STRUCT_PROLOGUE(sector_t);
+	 PARAM_STRING(env);
+	 Zones[self->ZoneNumber].Environment = S_FindEnvironment(env);
+	 return 0;
  }
 
  //===========================================================================

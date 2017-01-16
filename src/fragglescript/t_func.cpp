@@ -1786,7 +1786,7 @@ public:
 	DLightLevel(sector_t * s,int destlevel,int speed);
 	void	Serialize(FSerializer &arc);
 	void		Tick ();
-	void		Destroy() { Super::Destroy(); m_Sector->lightingdata=NULL; }
+	void		OnDestroy() { Super::OnDestroy(); m_Sector->lightingdata = nullptr; }
 };
 
 IMPLEMENT_CLASS(DLightLevel, false, false)
@@ -2623,7 +2623,7 @@ void FParser::SF_MaxPlayerAmmo()
 		}
 		else if(t_argc >= 3)
 		{
-			AAmmo * iammo = (AAmmo*)players[playernum].mo->FindInventory(ammotype);
+			auto iammo = players[playernum].mo->FindInventory(ammotype);
 			amount = intvalue(t_argv[2]);
 			if(amount < 0) amount = 0;
 			if (!iammo) 
@@ -2637,14 +2637,14 @@ void FParser::SF_MaxPlayerAmmo()
 
 			for (AInventory *item = players[playernum].mo->Inventory; item != NULL; item = item->Inventory)
 			{
-				if (item->IsKindOf(RUNTIME_CLASS(ABackpackItem)))
+				if (item->IsKindOf(PClass::FindClass(NAME_BackpackItem)))
 				{
 					if (t_argc>=4) amount = intvalue(t_argv[3]);
 					else amount*=2;
 					break;
 				}
 			}
-			iammo->BackpackMaxAmount=amount;
+			((AAmmo*)iammo)->BackpackMaxAmount=amount;
 		}
 
 		t_return.type = svt_int;

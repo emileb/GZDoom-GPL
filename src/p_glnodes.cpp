@@ -376,7 +376,9 @@ static bool LoadGLSegs(FileReader * lump)
 			{							// check for gl-vertices
 				segs[i].v1 = &level.vertexes[checkGLVertex3(LittleLong(ml->v1))];
 				segs[i].v2 = &level.vertexes[checkGLVertex3(LittleLong(ml->v2))];
-				segs[i].PartnerSeg = LittleLong(ml->partner) == 0xffffffffu? nullptr : &segs[LittleLong(ml->partner)];
+
+				const DWORD partner = LittleLong(ml->partner);
+				segs[i].PartnerSeg = DWORD_MAX == partner ? nullptr : &segs[partner];
 	
 				if(ml->linedef != 0xffff) // skip minisegs 
 				{
@@ -1290,7 +1292,7 @@ CCMD(clearnodecache)
 	}
 	catch (CRecoverableError &err)
 	{
-		Printf("%s", err.GetMessage());
+		Printf("%s\n", err.GetMessage());
 		return;
 	}
 

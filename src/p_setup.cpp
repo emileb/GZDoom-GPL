@@ -2299,7 +2299,7 @@ static void P_AllocateSideDefs (MapData *map, int count)
 		sidetemp[i].a.alpha = SHRT_MIN;
 		sidetemp[i].a.map = NO_SIDE;
 	}
-	auto numsides = map->Size(ML_SIDEDEFS) / sizeof(mapsidedef_t);
+	int numsides = map->Size(ML_SIDEDEFS) / sizeof(mapsidedef_t);
 	if (count < numsides)
 	{
 		Printf ("Map has %d unused sidedefs\n", numsides - count);
@@ -4189,6 +4189,11 @@ static void P_Shutdown ()
 	P_FreeLevelData ();
 	P_FreeExtraLevelData ();
 	ST_Clear();
+	FS_Close();
+	for (auto &p : players)
+	{
+		if (p.psprites != nullptr) p.psprites->Destroy();
+	}
 }
 
 #if 0

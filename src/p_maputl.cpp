@@ -397,7 +397,8 @@ bool AActor::FixMapthingPos()
 DEFINE_ACTION_FUNCTION(AActor, UnlinkFromWorld)
 {
 	PARAM_SELF_PROLOGUE(AActor);
-	self->UnlinkFromWorld(nullptr); // fixme
+	PARAM_POINTER_DEF(ctx, FLinkContext);
+	self->UnlinkFromWorld(ctx); // fixme
 	return 0;
 }
 
@@ -531,7 +532,8 @@ void AActor::LinkToWorld(FLinkContext *ctx, bool spawningmapthing, sector_t *sec
 DEFINE_ACTION_FUNCTION(AActor, LinkToWorld)
 {
 	PARAM_SELF_PROLOGUE(AActor);
-	self->LinkToWorld(nullptr);	// fixme
+	PARAM_POINTER_DEF(ctx, FLinkContext);
+	self->LinkToWorld(ctx);
 	return 0;
 }
 

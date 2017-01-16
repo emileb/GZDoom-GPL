@@ -165,6 +165,22 @@ xx(FlameThrower)
 xx(MiniMissileLauncher)
 xx(StrifeGrenadeLauncher)
 xx(Mauler)
+xx(BackpackItem)
+xx(PuzzleItem)
+xx(PuzzleItemNumber)
+xx(HealthPickup)
+xx(autousemode)
+xx(Ammo)
+xx(PowerTargeter)
+xx(PowerInvulnerable)
+xx(PowerStrength)
+xx(PowerInvisibility)
+xx(PowerIronFeet)
+xx(PowerLightAmp)
+xx(PowerWeaponLevel2)
+xx(PowerFlight)
+xx(PowerSpeed)
+xx(PowerTorch)
 
 xx(AcolyteBlue)
 xx(SpectralLightningV1)
@@ -277,6 +293,7 @@ xx(Massacre)	// For death by a cheater!
 xx(InstantDeath)	// Strife "instant death"
 xx(PoisonCloud)	// makes monsters howl.
 xx(Hitscan)		// for normal guns and the like
+xx(Quake)
 
 // Special death name for getting killed excessively. Could be used as
 // a damage type if you wanted to force an extreme death.
@@ -291,6 +308,7 @@ xx(Random2)
 xx(RandomPick)
 xx(FRandomPick)
 xx(GetClass)
+xx(GetParentClass)
 xx(GetDefaultByType)
 xx(Exp)
 xx(Log10)
@@ -348,6 +366,7 @@ xx(VisibleStartAngle)
 xx(VisibleStartPitch)
 xx(VisibleEndAngle)
 xx(VisibleEndPitch)
+xx(Format)
 
 // Various actor names which are used internally
 xx(MapSpot)
@@ -698,6 +717,7 @@ xx(BuiltinFindSingleNameState)
 xx(BuiltinHandleRuntimeState)
 xx(BuiltinGetDefault)
 xx(BuiltinClassCast)
+xx(BuiltinFormat)
 xx(Damage)
 
 // basic type names

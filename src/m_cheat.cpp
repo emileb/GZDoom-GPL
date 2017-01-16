@@ -219,7 +219,7 @@ void cht_DoCheat (player_t *player, int cheat)
 	case CHT_POWER:
 		if (player->mo != NULL && player->health >= 0)
 		{
-			item = player->mo->FindInventory (RUNTIME_CLASS(APowerWeaponLevel2), true);
+			item = player->mo->FindInventory (PClass::FindActor(NAME_PowerWeaponLevel2), true);
 			if (item != NULL)
 			{
 				item->Destroy ();
@@ -227,7 +227,7 @@ void cht_DoCheat (player_t *player, int cheat)
 			}
 			else
 			{
-				player->mo->GiveInventoryType (RUNTIME_CLASS(APowerWeaponLevel2));
+				player->mo->GiveInventoryType (PClass::FindActor(NAME_PowerWeaponLevel2));
 				msg = GStrings("TXT_CHEATPOWERON");
 			}
 		}
@@ -748,6 +748,8 @@ void cht_Give (player_t *player, const char *name, int amount)
 
 	if (giveall || stricmp (name, "artifacts") == 0)
 	{
+		auto pitype = PClass::FindActor(NAME_PuzzleItem);
+
 		for (unsigned int i = 0; i < PClassActor::AllActorClasses.Size(); ++i)
 		{
 			type = PClassActor::AllActorClasses[i];
@@ -755,7 +757,7 @@ void cht_Give (player_t *player, const char *name, int amount)
 			{
 				AInventory *def = (AInventory*)GetDefaultByType (type);
 				if (def->Icon.isValid() && def->MaxAmount > 1 &&
-					!type->IsDescendantOf (RUNTIME_CLASS(APuzzleItem)) &&
+					!type->IsDescendantOf (pitype) &&
 					!type->IsDescendantOf (RUNTIME_CLASS(APowerup)) &&
 					!type->IsDescendantOf (RUNTIME_CLASS(AArmor)))
 				{
@@ -773,10 +775,11 @@ void cht_Give (player_t *player, const char *name, int amount)
 
 	if (giveall || stricmp (name, "puzzlepieces") == 0)
 	{
+		auto pitype = PClass::FindActor(NAME_PuzzleItem);
 		for (unsigned int i = 0; i < PClassActor::AllActorClasses.Size(); ++i)
 		{
 			type = PClassActor::AllActorClasses[i];
-			if (type->IsDescendantOf (RUNTIME_CLASS(APuzzleItem)))
+			if (type->IsDescendantOf (pitype))
 			{
 				AInventory *def = (AInventory*)GetDefaultByType (type);
 				if (def->Icon.isValid())
@@ -860,7 +863,7 @@ void cht_Take (player_t *player, const char *name, int amount)
 		{
 			PClass *type = PClassActor::AllActorClasses[i];
 
-			if (type->IsDescendantOf(RUNTIME_CLASS (ABackpackItem)))
+			if (type->IsDescendantOf(PClass::FindClass(NAME_BackpackItem)))
 			{
 				AInventory *pack = player->mo->FindInventory(static_cast<PClassActor *>(type));
 
@@ -955,13 +958,14 @@ void cht_Take (player_t *player, const char *name, int amount)
 
 	if (takeall || stricmp (name, "artifacts") == 0)
 	{
+		auto pitype = PClass::FindActor(NAME_PuzzleItem);
 		for (unsigned int i = 0; i < PClassActor::AllActorClasses.Size(); ++i)
 		{
 			type = PClassActor::AllActorClasses[i];
 
 			if (type->IsDescendantOf (RUNTIME_CLASS (AInventory)))
 			{
-				if (!type->IsDescendantOf (RUNTIME_CLASS (APuzzleItem)) &&
+				if (!type->IsDescendantOf (pitype) &&
 					!type->IsDescendantOf (RUNTIME_CLASS (APowerup)) &&
 					!type->IsDescendantOf (RUNTIME_CLASS (AArmor)) &&
 					!type->IsDescendantOf (RUNTIME_CLASS (AWeapon)) &&
@@ -981,11 +985,12 @@ void cht_Take (player_t *player, const char *name, int amount)
 
 	if (takeall || stricmp (name, "puzzlepieces") == 0)
 	{
+		auto pitype = PClass::FindActor(NAME_PuzzleItem);
 		for (unsigned int i = 0; i < PClassActor::AllActorClasses.Size(); ++i)
 		{
 			type = PClassActor::AllActorClasses[i];
 
-			if (type->IsDescendantOf (RUNTIME_CLASS (APuzzleItem)))
+			if (type->IsDescendantOf (pitype))
 			{
 				AActor *puzzlepiece = player->mo->FindInventory(static_cast<PClassActor *>(type));
 

@@ -275,6 +275,7 @@ FSerializer &Serialize(FSerializer &arc, const char *key, sector_t &p, sector_t 
 			("linked_floor", p.e->Linked.Floor.Sectors)
 			("linked_ceiling", p.e->Linked.Ceiling.Sectors)
 			("colormap", p.ColorMap, def->ColorMap)
+			("gravity", p.gravity, def->gravity)
 			.Terrain("floorterrain", p.terrainnum[0], &def->terrainnum[0])
 			.Terrain("ceilingterrain", p.terrainnum[1], &def->terrainnum[1])
 			("scrolls", scroll, nul)
@@ -377,7 +378,7 @@ FSerializer &Serialize(FSerializer &arc, const char *key, subsector_t *&ss, subs
 				.StringPtr(nullptr, str)
 				.EndArray();
 
-			if (num_verts == level.vertexes.Size() && num_subs == numsubsectors && hasglnodes)
+			if (num_verts == (int)level.vertexes.Size() && num_subs == numsubsectors && hasglnodes)
 			{
 				success = true;
 				int sub = 0;
@@ -963,7 +964,7 @@ void G_SerializeLevel(FSerializer &arc, bool hubload)
 	arc.Array("sectors", &level.sectors[0], &loadsectors[0], level.sectors.Size());
 	arc("zones", Zones);
 	arc("lineportals", linePortals);
-	arc("sectorportals", sectorPortals);
+	arc("sectorportals", level.sectorPortals);
 	if (arc.isReading()) P_CollectLinkedPortals();
 
 	DThinker::SerializeThinkers(arc, !hubload);

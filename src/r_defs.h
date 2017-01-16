@@ -283,22 +283,15 @@ class ASectorAction : public AActor
 {
 	DECLARE_CLASS (ASectorAction, AActor)
 public:
-	ASectorAction (bool activatedByUse = false);
-	void Destroy () override;
+	void OnDestroy() override;
 	void BeginPlay ();
 	void Activate (AActor *source);
 	void Deactivate (AActor *source);
-	bool TriggerAction(AActor *triggerer, int activationType);
 	bool CanTrigger (AActor *triggerer) const;
-	bool IsActivatedByUse() const;
-protected:
 	virtual bool DoTriggerAction(AActor *triggerer, int activationType);
+protected:
 	bool CheckTrigger(AActor *triggerer) const;
-private:
-	bool ActivatedByUse;
 };
-
-class ASkyViewpoint;
 
 struct secplane_t
 {
@@ -675,6 +668,7 @@ public:
 	int GetCeilingLight () const;
 	sector_t *GetHeightSec() const;
 	double GetFriction(int plane = sector_t::floor, double *movefac = NULL) const;
+	bool TriggerSectorActions(AActor *thing, int activation);
 
 	DInterpolation *SetInterpolation(int position, bool attach);
 
@@ -930,32 +924,13 @@ public:
 		portals[plane] = nullptr;
 	}
 
-	FSectorPortal *GetPortal(int plane)
-	{
-		return &sectorPortals[Portals[plane]];
-	}
+	FSectorPortal *GetPortal(int plane);
+	double GetPortalPlaneZ(int plane);
+	DVector2 GetPortalDisplacement(int plane);
+	int GetPortalType(int plane);
+	int GetOppositePortalGroup(int plane);
 
-	double GetPortalPlaneZ(int plane)
-	{
-		return sectorPortals[Portals[plane]].mPlaneZ;
-	}
-
-	DVector2 GetPortalDisplacement(int plane)
-	{
-		return sectorPortals[Portals[plane]].mDisplacement;
-	}
-
-	int GetPortalType(int plane)
-	{
-		return sectorPortals[Portals[plane]].mType;
-	}
-
-	int GetOppositePortalGroup(int plane)
-	{
-		return sectorPortals[Portals[plane]].mDestination->PortalGroup;
-	}
-
-	void SetVerticesDirty()	
+	void SetVerticesDirty()
 	{
 		for (unsigned i = 0; i < e->vertices.Size(); i++) e->vertices[i]->dirty = true;
 	}
@@ -1072,7 +1047,7 @@ public:
 	// flexible in a Bloody way. SecActTarget forms a list of actors
 	// joined by their tracer fields. When a potential sector action
 	// occurs, SecActTarget's TriggerAction method is called.
-	TObjPtr<ASectorAction> SecActTarget;
+	TObjPtr<AActor> SecActTarget;
 
 	// [RH] The portal or skybox to render for this sector.
 	unsigned Portals[2];
@@ -1317,10 +1292,7 @@ struct line_t
 		alpha = a;
 	}
 
-	FSectorPortal *GetTransferredPortal()
-	{
-		return portaltransferred >= sectorPortals.Size() ? (FSectorPortal*)NULL : &sectorPortals[portaltransferred];
-	}
+	FSectorPortal *GetTransferredPortal();
 
 	FLinePortal *getPortal() const
 	{

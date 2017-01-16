@@ -351,8 +351,18 @@ DObject::~DObject ()
 //
 //==========================================================================
 
-void DObject::Destroy ()
+void DObject:: Destroy ()
 {
+	// We cannot call the VM during shutdown because all the needed data has been or is in the process of being deleted.
+	if (PClass::bVMOperational)
+	{
+		IFVIRTUAL(DObject, OnDestroy)
+		{
+			VMValue params[1] = { (DObject*)this };
+			GlobalVMStack.Call(func, params, 1, nullptr, 0);
+		}
+	}
+	OnDestroy();
 	ObjectFlags = (ObjectFlags & ~OF_Fixed) | OF_EuthanizeMe;
 }
 
@@ -470,11 +480,11 @@ size_t DObject::StaticPointerSubstitution (DObject *old, DObject *notOld, bool s
 			changed += players[i].FixPointers (old, notOld);
 	}
 
-	for (auto &s : sectorPortals)
+	for (auto &s : level.sectorPortals)
 	{
 		if (s.mSkybox == old)
 		{
-			s.mSkybox = static_cast<ASkyViewpoint*>(notOld);
+			s.mSkybox = static_cast<AActor*>(notOld);
 			changed++;
 		}
 	}
@@ -485,7 +495,7 @@ size_t DObject::StaticPointerSubstitution (DObject *old, DObject *notOld, bool s
 #define SECTOR_CHECK(f,t) \
 if (sec.f.p == static_cast<t *>(old)) { sec.f = static_cast<t *>(notOld); changed++; }
 		SECTOR_CHECK( SoundTarget, AActor );
-		SECTOR_CHECK( SecActTarget, ASectorAction );
+		SECTOR_CHECK( SecActTarget, AActor );
 		SECTOR_CHECK( floordata, DSectorEffect );
 		SECTOR_CHECK( ceilingdata, DSectorEffect );
 		SECTOR_CHECK( lightingdata, DSectorEffect );
@@ -555,4 +565,17 @@ DEFINE_ACTION_FUNCTION(DObject, GetClassName)
 {
 	PARAM_SELF_PROLOGUE(DObject);
 	ACTION_RETURN_INT(self->GetClass()->TypeName);
+}
+
+
+void *DObject::ScriptVar(FName field, PType *type)
+{
+	auto sym = dyn_cast<PField>(GetClass()->Symbols.FindSymbol(field, true));
+	if (sym && sym->Type == type)
+	{
+		return (((char*)this) + sym->Offset);
+	}
+	// This is only for internal use so I_Error is fine.
+	I_Error("Variable %s not found in %s\n", field.GetChars(), GetClass()->TypeName.GetChars());
+	return nullptr;
 }

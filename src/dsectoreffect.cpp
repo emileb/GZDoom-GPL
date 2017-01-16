@@ -26,6 +26,7 @@
 #include "dsectoreffect.h"
 #include "gi.h"
 #include "p_local.h"
+#include "g_levellocals.h"
 #include "p_3dmidtex.h"
 #include "r_data/r_interpolate.h"
 #include "statnums.h"
@@ -40,7 +41,7 @@ DSectorEffect::DSectorEffect ()
 	m_Sector = NULL;
 }
 
-void DSectorEffect::Destroy()
+void DSectorEffect::OnDestroy()
 {
 	if (m_Sector)
 	{
@@ -57,7 +58,7 @@ void DSectorEffect::Destroy()
 			m_Sector->lightingdata = NULL;
 		}
 	}
-	Super::Destroy();
+	Super::OnDestroy();
 }
 
 DSectorEffect::DSectorEffect (sector_t *sector)
@@ -88,10 +89,10 @@ DMover::DMover (sector_t *sector)
 	interpolation = NULL;
 }
 
-void DMover::Destroy()
+void DMover::OnDestroy()
 {
 	StopInterpolation();
-	Super::Destroy();
+	Super::OnDestroy();
 }
 
 void DMover::Serialize(FSerializer &arc)

@@ -2617,11 +2617,11 @@ bool P_TryMove(AActor *thing, const DVector2 &pos,
 
 		if (!oldAboveFakeFloor && eyez > fakez)
 		{ // View went above fake floor
-			newsec->SecActTarget->TriggerAction(thing, SECSPAC_EyesSurface);
+			newsec->TriggerSectorActions(thing, SECSPAC_EyesSurface);
 		}
 		else if (oldAboveFakeFloor && eyez <= fakez)
 		{ // View went below fake floor
-			newsec->SecActTarget->TriggerAction(thing, SECSPAC_EyesDive);
+			newsec->TriggerSectorActions(thing, SECSPAC_EyesDive);
 		}
 
 		if (!(hs->MoreFlags & SECF_FAKEFLOORONLY))
@@ -2629,11 +2629,11 @@ bool P_TryMove(AActor *thing, const DVector2 &pos,
 			fakez = hs->ceilingplane.ZatPoint(pos);
 			if (!oldAboveFakeCeiling && eyez > fakez)
 			{ // View went above fake ceiling
-				newsec->SecActTarget->TriggerAction(thing, SECSPAC_EyesAboveC);
+				newsec->TriggerSectorActions(thing, SECSPAC_EyesAboveC);
 			}
 			else if (oldAboveFakeCeiling && eyez <= fakez)
 			{ // View went below fake ceiling
-				newsec->SecActTarget->TriggerAction(thing, SECSPAC_EyesBelowC);
+				newsec->TriggerSectorActions(thing, SECSPAC_EyesBelowC);
 			}
 		}
 	}
@@ -5305,7 +5305,7 @@ bool P_UseTraverse(AActor *usething, const DVector2 &start, const DVector2 &end,
 
 				sec = usething->Sector;
 
-				if (sec->SecActTarget && sec->SecActTarget->TriggerAction(usething, SECSPAC_Use))
+				if (sec->SecActTarget && sec->TriggerSectorActions(usething, SECSPAC_Use))
 				{
 					return true;
 				}
@@ -5314,7 +5314,7 @@ bool P_UseTraverse(AActor *usething, const DVector2 &start, const DVector2 &end,
 					in->d.line->frontsector : in->d.line->backsector;
 
 				if (sec != NULL && sec->SecActTarget &&
-					sec->SecActTarget->TriggerAction(usething, SECSPAC_UseWall))
+					sec->TriggerSectorActions(usething, SECSPAC_UseWall))
 				{
 					return true;
 				}
@@ -5435,7 +5435,7 @@ void P_UseLines(player_t *player)
 		sector_t *sec = player->mo->Sector;
 		int spac = SECSPAC_Use;
 		if (foundline) spac |= SECSPAC_UseWall;
-		if ((!sec->SecActTarget || !sec->SecActTarget->TriggerAction(player->mo, spac)) &&
+		if ((!sec->SecActTarget || !sec->TriggerSectorActions(player->mo, spac)) &&
 			P_NoWayTraverse(player->mo, start, end))
 		{
 			S_Sound(player->mo, CHAN_VOICE, "*usefail", 1, ATTN_IDLE);
@@ -5514,6 +5514,13 @@ bool P_UsePuzzleItem(AActor *PuzzleItemUser, int PuzzleItemType)
 		return true;
 	}
 	return false;
+}
+
+DEFINE_ACTION_FUNCTION(AActor, UsePuzzleItem)
+{
+	PARAM_SELF_PROLOGUE(AActor);
+	PARAM_INT(puzznum);
+	ACTION_RETURN_BOOL(P_UsePuzzleItem(self, puzznum));
 }
 
 //==========================================================================

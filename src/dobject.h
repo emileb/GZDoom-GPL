@@ -39,7 +39,7 @@
 #include "i_system.h"
 
 class PClass;
-
+class PType;
 class FSerializer;
 
 class   DObject;
@@ -94,14 +94,10 @@ enum
 	CLASSREG_PClass,
 	CLASSREG_PClassActor,
 	CLASSREG_PClassInventory,
-	CLASSREG_PClassHealth,
-	CLASSREG_PClassPuzzleItem,
 	CLASSREG_PClassWeapon,
 	CLASSREG_PClassPlayerPawn,
 	CLASSREG_PClassType,
 	CLASSREG_PClassClass,
-	CLASSREG_PClassWeaponPiece,
-	CLASSREG_PClassPowerupGiver
 };
 
 struct ClassReg
@@ -455,6 +451,8 @@ public:
 	DObject *GCNext;			// Next object in this collection list
 	uint32 ObjectFlags;			// Flags for this object
 
+	void *ScriptVar(FName field, PType *type);
+
 public:
 	DObject ();
 	DObject (PClass *inClass);
@@ -475,7 +473,12 @@ public:
 	// that don't call their base class.
 	void CheckIfSerialized () const;
 
-	virtual void Destroy();
+	virtual void OnDestroy() {}
+	void Destroy();
+
+	// Add other types as needed.
+	int &IntVar(FName field);
+	double &FloatVar(FName field);
 
 	// If you need to replace one object with another and want to
 	// change any pointers from the old object to the new object,
