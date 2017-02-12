@@ -185,8 +185,13 @@ static int DoomSpecificInfo (char *buffer, char *end)
 void I_StartupJoysticks();
 void I_ShutdownJoysticks();
 
+#ifdef __ANDROID__
+int main_android (int argc, char **argv)
+{
+#else
 int main (int argc, char **argv)
 {
+#endif
 #if !defined (__APPLE__)
 	{
 		int s[4] = { SIGSEGV, SIGILL, SIGFPE, SIGBUS };

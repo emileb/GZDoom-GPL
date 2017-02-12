@@ -79,6 +79,8 @@ static PROC WinGetProcAddress(const char *name)
 	#else
 		#if defined(__sgi) || defined(__sun)
 			#define IntGetProcAddress(name) SunGetProcAddress(name)
+	    #elif defined(__MOBILE__)
+	        #define IntGetProcAddress(name) SDL_GL_GetProcAddress(name)
 		#else /* GLX */
 		    #include <GL/glx.h>
 

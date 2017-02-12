@@ -9,7 +9,9 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#ifndef __ANDROID__
 #include <wordexp.h>
+#endif
 #include <signal.h>
 
 int ChildQuit;
@@ -423,6 +425,8 @@ bool TimidityPPMIDIDevice::LaunchTimidity ()
 		LocalFree (msgBuf);
 	}
 	return false;
+#elif defined(__MOBILE__)
+    	return false;
 #else
 	if (WavePipe[0] != -1 && WavePipe[1] == -1 && Stream != NULL)
 	{

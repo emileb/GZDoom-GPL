@@ -1430,7 +1430,7 @@ static void handle_T_option(char *z){
 */
 static char *output_dir = NULL;
 
-static inline Boolean is_seperator(int c)
+static  Boolean is_seperator(int c)
 {
   if (c == '/')
     return LEMON_TRUE;

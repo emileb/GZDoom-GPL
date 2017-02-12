@@ -2299,7 +2299,7 @@ void D_DoomMain (void)
 	}
 
 	D_DoomInit();
-
+    Printf("init done");
 	// [RH] Make sure zdoom.pk3 is always loaded,
 	// as it contains magic stuff we need.
 	wad = BaseFileSearch (BASEWAD, NULL, true);
@@ -2319,9 +2319,11 @@ void D_DoomMain (void)
 
 	do
 	{
+	 Printf("init `");
 		PClass::StaticInit();
+		 Printf("init 1");
 		PType::StaticInit();
-
+ Printf("init 3");
 		if (restart)
 		{
 			C_InitConsole(SCREENWIDTH, SCREENHEIGHT, false);

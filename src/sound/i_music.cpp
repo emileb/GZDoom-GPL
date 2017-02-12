@@ -43,7 +43,11 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
+
+#ifndef __ANDROID__ // No wordexp in Android
 #include <wordexp.h>
+#endif
+
 #include <stdio.h>
 #include "mus2midi.h"
 #define FALSE 0
